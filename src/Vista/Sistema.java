@@ -155,7 +155,7 @@ public final class Sistema extends javax.swing.JFrame {
         Object[] ob = new Object[4];
         for (int i = 0; i < ListarVenta.size(); i++) {
             ob[0] = ListarVenta.get(i).getId();
-            ob[1] = ListarVenta.get(i).getNombre_cli();
+            ob[1] = ListarVenta.get(i).getCliente();
             ob[2] = ListarVenta.get(i).getVendedor();
             ob[3] = ListarVenta.get(i).getTotal();
             modelo.addRow(ob);
@@ -627,7 +627,7 @@ public final class Sistema extends javax.swing.JFrame {
 
         jPanel3.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 50, 555, 330));
 
-        jPanel9.setBackground(new java.awt.Color(204, 204, 255));
+        jPanel9.setBackground(new java.awt.Color(255, 255, 255));
         jPanel9.setBorder(javax.swing.BorderFactory.createTitledBorder("Registro Cliente"));
 
         jLabel12.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
@@ -789,7 +789,7 @@ public final class Sistema extends javax.swing.JFrame {
 
         jPanel4.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(285, 57, 558, 310));
 
-        jPanel10.setBackground(new java.awt.Color(255, 204, 204));
+        jPanel10.setBackground(new java.awt.Color(255, 255, 255));
         jPanel10.setBorder(javax.swing.BorderFactory.createTitledBorder("Nuevo Proveedor"));
 
         jLabel17.setFont(new java.awt.Font("Times New Roman", 1, 14)); // NOI18N
@@ -939,7 +939,7 @@ public final class Sistema extends javax.swing.JFrame {
         jPanel5.add(jScrollPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 50, 590, 330));
         jPanel5.add(txtIdproducto, new org.netbeans.lib.awtextra.AbsoluteConstraints(223, 25, -1, -1));
 
-        jPanel11.setBackground(new java.awt.Color(255, 204, 255));
+        jPanel11.setBackground(new java.awt.Color(255, 255, 255));
         jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder("Nuevo Producto"));
 
         jLabel22.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
@@ -1087,7 +1087,7 @@ public final class Sistema extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("4", jPanel5);
 
-        jPanel6.setBackground(new java.awt.Color(255, 255, 102));
+        jPanel6.setBackground(new java.awt.Color(255, 255, 255));
         jPanel6.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         TableVentas.setModel(new javax.swing.table.DefaultTableModel(
@@ -1170,7 +1170,7 @@ public final class Sistema extends javax.swing.JFrame {
         jLabel32.setText("DATOS DE LA EMPRESA");
         jPanel7.add(jLabel32, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 40, -1, -1));
 
-        jPanel8.setBackground(new java.awt.Color(153, 255, 204));
+        jPanel8.setBackground(new java.awt.Color(255, 255, 255));
 
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
