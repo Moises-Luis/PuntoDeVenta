@@ -150,6 +150,7 @@ public class VentaDao {
         }
         return cl;
     }
+    
     public void pdfV(int idventa, int Cliente, double total, String usuario) {
         try {
             Date date = new Date();
@@ -297,5 +298,66 @@ public class VentaDao {
         }
     }
 
+    public boolean RegistrarVentaCompleta(Venta v, List<Detalle> detalles) {
+    String sqlVenta = "INSERT INTO ventas (cliente, vendedor, total, fecha) VALUES (?,?,?,?)";
+    String sqlDetalle = "INSERT INTO detalle (id_pro, cantidad, precio, id_venta) VALUES (?,?,?,?)";
+    String sqlStock = "UPDATE productos SET stock = ? WHERE id = ?";
+
+    try {
+        con = cn.getConnection();
+        con.setAutoCommit(false); // 🔥 INICIA TRANSACCIÓN
+
+        // 🔹 1. Insertar venta
+        ps = con.prepareStatement(sqlVenta, PreparedStatement.RETURN_GENERATED_KEYS);
+        ps.setInt(1, v.getCliente());
+        ps.setString(2, v.getVendedor());
+        ps.setDouble(3, v.getTotal());
+        ps.setString(4, v.getFecha());
+        ps.executeUpdate();
+
+        // 🔥 Obtener ID de la venta
+        rs = ps.getGeneratedKeys();
+        int idVenta = 0;
+        if (rs.next()) {
+            idVenta = rs.getInt(1);
+        }
+
+        // 🔹 2. Insertar detalles + actualizar stock
+        for (Detalle d : detalles) {
+
+            // insertar detalle
+            ps = con.prepareStatement(sqlDetalle);
+            ps.setInt(1, d.getId_pro());
+            ps.setInt(2, d.getCantidad());
+            ps.setDouble(3, d.getPrecio());
+            ps.setInt(4, idVenta);
+            ps.executeUpdate();
+
+            // Obtener producto actual
+            Productos pro = new ProductosDao().BuscarId(d.getId_pro());
+
+            // calcular nuevo stock
+            int nuevoStock = pro.getStock() - d.getCantidad();
+
+            ps = con.prepareStatement(sqlStock);
+            ps.setInt(1, nuevoStock);
+            ps.setInt(2, d.getId_pro());
+            ps.executeUpdate();
+        }
+
+        con.commit(); // ✅ TODO BIEN
+        return true;
+
+    } catch (Exception e) {
+        try {
+            con.rollback(); // ❌ ERROR → DESHACE TODO
+            System.out.println("❌ Rollback ejecutado");
+            e.printStackTrace();
+        } catch (SQLException ex) {
+            System.out.println(ex.toString());
+        }
+        return false;
+    }
+}
     
 }

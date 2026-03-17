@@ -1704,16 +1704,36 @@ public final class Sistema extends javax.swing.JFrame {
         // TODO add your handling code here:
         if (TableVenta.getRowCount() > 0) {
             if (!"".equals(txtNombreClienteventa.getText())) {
-                RegistrarVenta();
-                RegistrarDetalle();
-                ActualizarStock();
-                LimpiarTableVenta();
-                LimpiarClienteventa();
+
+                // CREAR LISTA DE DETALLES
+                List<Detalle> listaDetalles = new ArrayList<>();
+
+                for (int i = 0; i < TableVenta.getRowCount(); i++) {
+                    Detalle d = new Detalle();
+
+                    d.setId_pro(Integer.parseInt(TableVenta.getValueAt(i, 0).toString()));
+                    d.setCantidad(Integer.parseInt(TableVenta.getValueAt(i, 2).toString()));
+                    d.setPrecio(Double.parseDouble(TableVenta.getValueAt(i, 3).toString()));
+
+                    listaDetalles.add(d);
+                }
+
+                // LLAMAR TRANSACCIÓN
+                boolean ok = Vdao.RegistrarVentaCompleta(v, listaDetalles);
+
+                if (ok) {
+                    JOptionPane.showMessageDialog(null, "Venta realizada correctamente");
+                    LimpiarTableVenta();
+                    LimpiarClienteventa();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Error en la venta (Rollback ejecutado)");
+                }
+
             } else {
                 JOptionPane.showMessageDialog(null, "Debes buscar un cliente");
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Noy productos en la venta");
+            JOptionPane.showMessageDialog(null, "No hay productos en la venta");
         }
 
     }//GEN-LAST:event_btnGenerarVentaActionPerformed
@@ -2039,7 +2059,7 @@ public final class Sistema extends javax.swing.JFrame {
         txtPrecioVenta.setText("");
         txtIdVenta.setText("");
     }
-
+/**
     private void RegistrarVenta() {
         int cliente = Integer.parseInt(txtIdCV.getText());
         String vendedor = LabelVendedor.getText();
@@ -2078,7 +2098,7 @@ public final class Sistema extends javax.swing.JFrame {
 
         }
     }
-
+**/
     private void LimpiarTableVenta() {
         tmp = (DefaultTableModel) TableVenta.getModel();
         int fila = TableVenta.getRowCount();

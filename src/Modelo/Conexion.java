@@ -6,17 +6,21 @@ import java.sql.SQLException;
 
 public class Conexion {
 
-    Connection con;
+    private static final String URL = "jdbc:mysql://localhost:3306/sistemaventa?serverTimezone=UTC";
+    private static final String USER = "root";
+    private static final String PASS = "3133";
+
+    private Connection con;
 
     public Connection getConnection() {
         try {
-            String myBD = "jdbc:mysql://localhost:3306/sistemaventa?serverTimezone=UTC";
-            con = DriverManager.getConnection(myBD, "root", "3133");
-            return con;
+            if (con == null || con.isClosed()) {
+                con = DriverManager.getConnection(URL, USER, PASS);
+                System.out.println("Conexión establecida");
+            }
         } catch (SQLException e) {
-            System.out.println(e.toString());
+            System.out.println("Error conexión: " + e.getMessage());
         }
-        return null;
+        return con;
     }
-
 }
