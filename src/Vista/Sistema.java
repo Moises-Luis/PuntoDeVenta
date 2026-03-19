@@ -52,7 +52,8 @@ public final class Sistema extends javax.swing.JFrame {
     DefaultTableModel tmp = new DefaultTableModel();
     int item;
     double Totalpagar = 0.00;
-    
+
+    List<Detalle> listaDetalles = new ArrayList<>();
 
     public Sistema() {
         initComponents();
@@ -219,6 +220,7 @@ public final class Sistema extends javax.swing.JFrame {
         btnGraficar = new javax.swing.JButton();
         Midate = new com.toedter.calendar.JDateChooser();
         jLabel11 = new javax.swing.JLabel();
+        btnPrepararPedido = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         TableCliente = new javax.swing.JTable();
@@ -575,7 +577,7 @@ public final class Sistema extends javax.swing.JFrame {
                 btnGenerarVentaActionPerformed(evt);
             }
         });
-        jPanel2.add(btnGenerarVenta, new org.netbeans.lib.awtextra.AbsoluteConstraints(453, 373, -1, 45));
+        jPanel2.add(btnGenerarVenta, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 360, -1, 45));
 
         jLabel10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/money.png"))); // NOI18N
         jLabel10.setText("Total a Pagar:");
@@ -583,7 +585,7 @@ public final class Sistema extends javax.swing.JFrame {
 
         LabelTotal.setText("-----");
         jPanel2.add(LabelTotal, new org.netbeans.lib.awtextra.AbsoluteConstraints(756, 381, -1, -1));
-        jPanel2.add(txtIdCV, new org.netbeans.lib.awtextra.AbsoluteConstraints(327, 375, -1, -1));
+        jPanel2.add(txtIdCV, new org.netbeans.lib.awtextra.AbsoluteConstraints(327, 375, 30, -1));
         jPanel2.add(txtIdPro, new org.netbeans.lib.awtextra.AbsoluteConstraints(678, 126, -1, -1));
 
         btnGraficar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/torta.png"))); // NOI18N
@@ -597,6 +599,14 @@ public final class Sistema extends javax.swing.JFrame {
 
         jLabel11.setText("Seleccionar:");
         jPanel2.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 50, -1, -1));
+
+        btnPrepararPedido.setText("Preparar Venta");
+        btnPrepararPedido.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrepararPedidoActionPerformed(evt);
+            }
+        });
+        jPanel2.add(btnPrepararPedido, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 380, -1, -1));
 
         jTabbedPane1.addTab("1", jPanel2);
 
@@ -1702,47 +1712,24 @@ public final class Sistema extends javax.swing.JFrame {
 
     private void btnGenerarVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerarVentaActionPerformed
         // TODO add your handling code here:
-        if (TableVenta.getRowCount() > 0) {
-            if (!"".equals(txtNombreClienteventa.getText())) {
-                int cliente = Integer.parseInt(txtIdCV.getText());
-                String vendedor = LabelVendedor.getText();
-                double monto = Totalpagar;
-                v.setCliente(cliente);
-                v.setVendedor(vendedor);
-                v.setTotal(monto);
-                v.setFecha(fechaActual);
-            
-                // CREAR LISTA DE DETALLES
-                List<Detalle> listaDetalles = new ArrayList<>();
+        if (v != null && listaDetalles.size() > 0) {
 
-                for (int i = 0; i < TableVenta.getRowCount(); i++) {
-                    Detalle d = new Detalle();
+            // LLAMAR TRANSACCIÓN
+            boolean ok = Vdao.confirmarVenta(v, listaDetalles);
 
-                    d.setId_pro(Integer.parseInt(TableVenta.getValueAt(i, 0).toString()));
-                    d.setCantidad(Integer.parseInt(TableVenta.getValueAt(i, 2).toString()));
-                    d.setPrecio(Double.parseDouble(TableVenta.getValueAt(i, 3).toString()));
-
-                    listaDetalles.add(d);
-                }
-
-                // LLAMAR TRANSACCIÓN
-                boolean ok = Vdao.RegistrarVentaCompleta(v, listaDetalles);
-
-                if (ok) {
-                    JOptionPane.showMessageDialog(null, "Venta realizada correctamente");
-                    LimpiarTableVenta();
-                    LimpiarClienteventa();
-                } else {
-                    JOptionPane.showMessageDialog(null, "Error en la venta (Rollback ejecutado)");
-                }
-
+            if (ok) {
+                JOptionPane.showMessageDialog(null, "Venta realizada correctamente");
+                LimpiarTableVenta();
+                LimpiarClienteventa();
+                v = null;
+                listaDetalles.clear();
             } else {
-                JOptionPane.showMessageDialog(null, "Debes buscar un cliente");
+                JOptionPane.showMessageDialog(null, "Error al confirmar venta");
             }
-        } else {
-            JOptionPane.showMessageDialog(null, "No hay productos en la venta");
-        }
 
+        } else {
+            JOptionPane.showMessageDialog(null, "Primero debes preparar la venta");
+        }
     }//GEN-LAST:event_btnGenerarVentaActionPerformed
 
     private void txtRucVentaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtRucVentaKeyTyped
@@ -1768,10 +1755,10 @@ public final class Sistema extends javax.swing.JFrame {
 
     private void btnEliminarventaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarventaActionPerformed
         // TODO add your handling code here:
-        modelo = (DefaultTableModel) TableVenta.getModel();
-        modelo.removeRow(TableVenta.getSelectedRow());
-        TotalPagar();
-        txtCodigoVenta.requestFocus();
+        Vdao.cancelarVenta();
+        v = null;
+        listaDetalles.clear();
+        JOptionPane.showMessageDialog(null, "Venta cancelada");
     }//GEN-LAST:event_btnEliminarventaActionPerformed
 
     private void txtCantidadVentaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtCantidadVentaKeyTyped
@@ -1859,6 +1846,48 @@ public final class Sistema extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_txtCodigoVentaKeyPressed
 
+    private void btnPrepararPedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrepararPedidoActionPerformed
+        // TODO add your handling code here:
+        if (TableVenta.getRowCount() > 0) {
+
+        if (!"".equals(txtNombreClienteventa.getText())) {
+            int cliente = Integer.parseInt(txtIdCV.getText());
+            String vendedor = LabelVendedor.getText();
+            double monto = Totalpagar;
+            v.setCliente(cliente);
+            v.setVendedor(vendedor);
+            v.setTotal(monto);
+            v.setFecha(fechaActual);
+
+            listaDetalles.clear();
+
+            for (int i = 0; i < TableVenta.getRowCount(); i++) {
+                    Detalle d = new Detalle();
+
+                    d.setId_pro(Integer.parseInt(TableVenta.getValueAt(i, 0).toString()));
+                    d.setCantidad(Integer.parseInt(TableVenta.getValueAt(i, 2).toString()));
+                    d.setPrecio(Double.parseDouble(TableVenta.getValueAt(i, 3).toString()));
+
+                    listaDetalles.add(d);
+                }
+
+                // LLAMAR TRANSACCIÓN
+                boolean ok = Vdao.prepararVenta(v, listaDetalles);
+            if (ok) {
+                JOptionPane.showMessageDialog(null, "Productos bloqueados. Ahora confirma la venta.");
+            } else {
+                JOptionPane.showMessageDialog(null, "Error al preparar venta");
+            }
+
+        } else {
+            JOptionPane.showMessageDialog(null, "Debe ingresar cliente");
+        }
+
+    } else {
+        JOptionPane.showMessageDialog(null, "No hay productos en la venta");
+    }
+    }//GEN-LAST:event_btnPrepararPedidoActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1924,6 +1953,7 @@ public final class Sistema extends javax.swing.JFrame {
     private javax.swing.JButton btnNuevoPro;
     private javax.swing.JButton btnNuevoProveedor;
     private javax.swing.JButton btnPdfVentas;
+    private javax.swing.JButton btnPrepararPedido;
     private javax.swing.JButton btnProductos;
     private javax.swing.JButton btnProveedor;
     private javax.swing.JButton btnVentas;

@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileSystemView;
 
 public class VentaDao {
@@ -34,6 +35,7 @@ public class VentaDao {
     PreparedStatement ps;
     ResultSet rs;
     int r;
+    int idVentaGenerado = 0;
     
     public int IdVenta(){
         int id = 0;
@@ -336,7 +338,7 @@ public boolean RegistrarVentaCompleta(Venta v, List<Detalle> detalles) {
             ps = con.prepareStatement(sqlSelectStock);
             ps.setInt(1, d.getId_pro());
             rs = ps.executeQuery();
-
+            
             int stockActual = 0;
             if (rs.next()) {
                 stockActual = rs.getInt("stock");
@@ -363,7 +365,8 @@ public boolean RegistrarVentaCompleta(Venta v, List<Detalle> detalles) {
             ps.setInt(2, d.getId_pro());
             ps.executeUpdate();
         }
-
+        // SIMULACIÓN DE USUARIO PENSANDO
+        Thread.sleep(20000); // 10 segundos
         con.commit(); // TODO BIEN
         return true;
 
@@ -378,5 +381,125 @@ public boolean RegistrarVentaCompleta(Venta v, List<Detalle> detalles) {
         return false;
     }
 }
-    
+
+
+    public boolean prepararVenta(Venta v, List<Detalle> detalles) {
+    String sqlSelectStock = "SELECT stock FROM productos WHERE id = ? FOR UPDATE";
+
+    try {
+        con = cn.getConnection();
+
+        con.setAutoCommit(false);
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
+        for (Detalle d : detalles) {
+
+            ps = con.prepareStatement(sqlSelectStock);
+            ps.setInt(1, d.getId_pro());
+            rs = ps.executeQuery();
+
+            int stockActual = 0;
+            if (rs.next()) {
+                stockActual = rs.getInt("stock");
+            }
+            rs.close();
+            ps.close();
+            if (stockActual < d.getCantidad()) {
+                throw new Exception("Stock insuficiente para producto ID: " + d.getId_pro());
+            }
+        }
+        
+        JOptionPane.showMessageDialog(null, "Productos bloqueados, esperando confirmación...");
+        return true;
+
+    } catch (Exception e) {
+        try {
+            if (con != null) con.rollback();
+            JOptionPane.showMessageDialog(null, "RollBack Ejecutado");
+        } catch (SQLException ex) {
+            System.out.println(ex.toString());
+        }
+        e.printStackTrace();
+        return false;
+    }
+}
+    public boolean confirmarVenta(Venta v, List<Detalle> detalles) {
+
+    String sqlVenta = "INSERT INTO ventas (cliente, vendedor, total, fecha) VALUES (?,?,?,?)";
+    String sqlDetalle = "INSERT INTO detalle (id_pro, cantidad, precio, id_venta) VALUES (?,?,?,?)";
+    String sqlUpdateStock = "UPDATE productos SET stock = ? WHERE id = ?";
+
+    try {
+
+        // 1. Insertar venta
+        ps = con.prepareStatement(sqlVenta, PreparedStatement.RETURN_GENERATED_KEYS);
+        ps.setInt(1, v.getCliente());
+        ps.setString(2, v.getVendedor());
+        ps.setDouble(3, v.getTotal());
+        ps.setString(4, v.getFecha());
+        ps.executeUpdate();
+
+        rs = ps.getGeneratedKeys();
+        if (rs.next()) {
+            idVentaGenerado = rs.getInt(1);
+        }
+        
+        // 2. Procesar detalles
+        for (Detalle d : detalles) {
+
+            int nuevoStock = 0;
+
+            // Leer stock nuevamente (ya está bloqueado)
+            ps = con.prepareStatement("SELECT stock FROM productos WHERE id = ?");
+            ps.setInt(1, d.getId_pro());
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int stockActual = rs.getInt("stock");
+                nuevoStock = stockActual - d.getCantidad();
+            }
+            
+            // Insertar detalle
+            ps = con.prepareStatement(sqlDetalle);
+            ps.setInt(1, d.getId_pro());
+            ps.setInt(2, d.getCantidad());
+            ps.setDouble(3, d.getPrecio());
+            ps.setInt(4, idVentaGenerado);
+            ps.executeUpdate();
+
+            // Actualizar stock
+            ps = con.prepareStatement(sqlUpdateStock);
+            ps.setInt(1, nuevoStock);
+            ps.setInt(2, d.getId_pro());
+            ps.executeUpdate();
+        }
+        
+        con.commit(); // AQUÍ SE LIBERA TODO
+        rs.close();
+        ps.close();
+        JOptionPane.showMessageDialog(null, "Venta confirmada correctamente");
+        return true;
+
+    } catch (Exception e) {
+        try {
+            if (con != null) con.rollback();
+            JOptionPane.showMessageDialog(null, "RollBack Ejecutado");
+        } catch (SQLException ex) {
+            System.out.println(ex.toString());
+        }
+        e.printStackTrace();
+        return false;
+    }
+}
+    public void cancelarVenta() {
+    try {
+        if (con != null) {
+            con.rollback();
+            con.close();
+            JOptionPane.showMessageDialog(null, "Transacción cancelada");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
 }
