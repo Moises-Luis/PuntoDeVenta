@@ -462,7 +462,7 @@ public final class Sistema extends javax.swing.JFrame {
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 200, 560));
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/encabezado.jpg"))); // NOI18N
-        getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 0, 870, 130));
+        getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, -10, 870, 130));
 
         jTabbedPane1.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -1691,6 +1691,28 @@ public final class Sistema extends javax.swing.JFrame {
 
     private void TableClienteMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TableClienteMouseClicked
         // TODO add your handling code here:
+        
+    btnEditarCliente.setEnabled(true);
+    btnEliminarCliente.setEnabled(true);
+    btnGuardarCliente.setEnabled(false);
+
+    int fila = TableCliente.rowAtPoint(evt.getPoint());
+
+    // OBTENER DNI DESDE LA TABLA
+    int dni = Integer.parseInt(TableCliente.getValueAt(fila, 1).toString());
+
+    // CONSULTAR A BD (NO usar datos de la tabla)
+    Cliente cl = client.Buscarcliente(dni);
+
+    // LLENAR CAMPOS CON DATOS REALES DE BD
+    txtIdCliente.setText(String.valueOf(cl.getId()));
+    txtDniCliente.setText(String.valueOf(dni));
+    txtNombreCliente.setText(cl.getNombre());
+    txtTelefonoCliente.setText(cl.getTelefono());
+    txtDirecionCliente.setText(cl.getDireccion());
+
+    System.out.println(">>> Cliente cargado desde BD");
+        /**
         btnEditarCliente.setEnabled(true);
         btnEliminarCliente.setEnabled(true);
         btnGuardarCliente.setEnabled(false);
@@ -1700,6 +1722,7 @@ public final class Sistema extends javax.swing.JFrame {
         txtNombreCliente.setText(TableCliente.getValueAt(fila, 2).toString());
         txtTelefonoCliente.setText(TableCliente.getValueAt(fila, 3).toString());
         txtDirecionCliente.setText(TableCliente.getValueAt(fila, 4).toString());
+        **/
     }//GEN-LAST:event_TableClienteMouseClicked
 
     private void btnGraficarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGraficarActionPerformed

@@ -409,13 +409,13 @@ public boolean RegistrarVentaCompleta(Venta v, List<Detalle> detalles) {
             }
         }
         
-        JOptionPane.showMessageDialog(null, "Productos bloqueados, esperando confirmación...");
+        //JOptionPane.showMessageDialog(null, "Productos bloqueados, esperando confirmación...");
         return true;
 
     } catch (Exception e) {
         try {
             if (con != null) con.rollback();
-            JOptionPane.showMessageDialog(null, "RollBack Ejecutado");
+            //JOptionPane.showMessageDialog(null, "RollBack Ejecutado");
         } catch (SQLException ex) {
             System.out.println(ex.toString());
         }
@@ -477,13 +477,13 @@ public boolean RegistrarVentaCompleta(Venta v, List<Detalle> detalles) {
         con.commit(); // AQUÍ SE LIBERA TODO
         rs.close();
         ps.close();
-        JOptionPane.showMessageDialog(null, "Venta confirmada correctamente");
+        //JOptionPane.showMessageDialog(null, "Venta confirmada correctamente");
         return true;
 
     } catch (Exception e) {
         try {
             if (con != null) con.rollback();
-            JOptionPane.showMessageDialog(null, "RollBack Ejecutado");
+            //JOptionPane.showMessageDialog(null, "RollBack Ejecutado");
         } catch (SQLException ex) {
             System.out.println(ex.toString());
         }
@@ -496,7 +496,7 @@ public boolean RegistrarVentaCompleta(Venta v, List<Detalle> detalles) {
         if (con != null) {
             con.rollback();
             con.close();
-            JOptionPane.showMessageDialog(null, "Transacción cancelada");
+            //JOptionPane.showMessageDialog(null, "Transacción cancelada");
         }
     } catch (SQLException e) {
         e.printStackTrace();

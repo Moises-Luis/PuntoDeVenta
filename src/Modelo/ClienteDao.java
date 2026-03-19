@@ -111,31 +111,42 @@ public class ClienteDao {
        }
    }
    
-public Cliente Buscarcliente(int dni) {
-    Cliente cl = new Cliente();
-    String sql = "SELECT * FROM clientes WHERE dni = ?";
+ public Cliente Buscarcliente(int dni) {
 
-    try {
-        con = cn.getConnection();
+        Cliente cl = new Cliente();
+        String sql = "SELECT * FROM clientes WHERE dni = ?";
 
-        // Nivel de aislamiento
-        con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        try {
 
-        ps = con.prepareStatement(sql);
-        ps.setInt(1, dni);
-        rs = ps.executeQuery();
+            // Creación de la conexión SOLO una vez
+            if (con == null || con.isClosed()) {
+                con = cn.getConnection();
+                con.setAutoCommit(false);
+                con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 
-        if (rs.next()) {
-            cl.setId(rs.getInt("id"));
-            cl.setNombre(rs.getString("nombre"));
-            cl.setTelefono(rs.getString("telefono"));
-            cl.setDireccion(rs.getString("direccion"));
+                System.out.println(">>> Transacción iniciada");
+            }
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, dni);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                cl.setId(rs.getInt("id"));
+                cl.setNombre(rs.getString("nombre"));
+                cl.setTelefono(rs.getString("telefono"));
+                cl.setDireccion(rs.getString("direccion"));
+            }
+
+            rs.close();
+            ps.close();
+
+            System.out.println(">>> Lectura realizada");
+
+        } catch (SQLException e) {
+            System.out.println(e.toString());
         }
 
-    } catch (SQLException e) {
-        System.out.println(e.toString());
+        return cl;
     }
-
-    return cl;
-}
 }
