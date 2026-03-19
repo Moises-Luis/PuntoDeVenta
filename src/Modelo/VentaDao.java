@@ -305,9 +305,9 @@ public class VentaDao {
 
     try {
         con = cn.getConnection();
-        con.setAutoCommit(false); // 🔥 INICIA TRANSACCIÓN
+        con.setAutoCommit(false); //INICIA TRANSACCIÓN
 
-        // 🔹 1. Insertar venta
+        // Insertar venta
         ps = con.prepareStatement(sqlVenta, PreparedStatement.RETURN_GENERATED_KEYS);
         ps.setInt(1, v.getCliente());
         ps.setString(2, v.getVendedor());
@@ -315,14 +315,14 @@ public class VentaDao {
         ps.setString(4, v.getFecha());
         ps.executeUpdate();
 
-        // 🔥 Obtener ID de la venta
+        // Obtener ID de la venta
         rs = ps.getGeneratedKeys();
         int idVenta = 0;
         if (rs.next()) {
             idVenta = rs.getInt(1);
         }
 
-        // 🔹 2. Insertar detalles + actualizar stock
+        // 2. Insertar detalles + actualizar stock
         for (Detalle d : detalles) {
 
             // insertar detalle
@@ -345,13 +345,13 @@ public class VentaDao {
             ps.executeUpdate();
         }
 
-        con.commit(); // ✅ TODO BIEN
+        con.commit(); // TODO BIEN
         return true;
 
     } catch (Exception e) {
         try {
-            con.rollback(); // ❌ ERROR → DESHACE TODO
-            System.out.println("❌ Rollback ejecutado");
+            con.rollback(); //  ERROR → DESHACE TODO
+            System.out.println("Rollback ejecutado");
             e.printStackTrace();
         } catch (SQLException ex) {
             System.out.println(ex.toString());

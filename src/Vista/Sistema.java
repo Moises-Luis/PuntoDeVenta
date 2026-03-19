@@ -1704,7 +1704,13 @@ public final class Sistema extends javax.swing.JFrame {
         // TODO add your handling code here:
         if (TableVenta.getRowCount() > 0) {
             if (!"".equals(txtNombreClienteventa.getText())) {
-
+                int cliente = Integer.parseInt(txtIdCV.getText());
+                String vendedor = LabelVendedor.getText();
+                double monto = Totalpagar;
+                v.setCliente(cliente);
+                v.setVendedor(vendedor);
+                v.setTotal(monto);
+            
                 // CREAR LISTA DE DETALLES
                 List<Detalle> listaDetalles = new ArrayList<>();
 
@@ -1782,6 +1788,7 @@ public final class Sistema extends javax.swing.JFrame {
                 double precio = Double.parseDouble(txtPrecioVenta.getText());
                 double total = cant * precio;
                 int stock = Integer.parseInt(txtStockDisponible.getText());
+                
                 if (stock >= cant) {
                     item = item + 1;
                     tmp = (DefaultTableModel) TableVenta.getModel();
