@@ -117,9 +117,11 @@ public class VentaDao {
            con = cn.getConnection();
            ps = con.prepareStatement(sql);
            rs = ps.executeQuery();
-           while (rs.next()) {               
+           while (rs.next()) {         
+               
                Venta vent = new Venta();
                vent.setId(rs.getInt("id"));
+               vent.setCliente(rs.getInt("cliente"));
                vent.setNombre_cli(rs.getString("nombre"));
                vent.setVendedor(rs.getString("vendedor"));
                vent.setTotal(rs.getDouble("total"));
@@ -298,16 +300,22 @@ public class VentaDao {
         }
     }
 
-    public boolean RegistrarVentaCompleta(Venta v, List<Detalle> detalles) {
+public boolean RegistrarVentaCompleta(Venta v, List<Detalle> detalles) {
+
     String sqlVenta = "INSERT INTO ventas (cliente, vendedor, total, fecha) VALUES (?,?,?,?)";
     String sqlDetalle = "INSERT INTO detalle (id_pro, cantidad, precio, id_venta) VALUES (?,?,?,?)";
-    String sqlStock = "UPDATE productos SET stock = ? WHERE id = ?";
+    String sqlSelectStock = "SELECT stock FROM productos WHERE id = ? FOR UPDATE";
+    String sqlUpdateStock = "UPDATE productos SET stock = ? WHERE id = ?";
 
     try {
         con = cn.getConnection();
-        con.setAutoCommit(false); //INICIA TRANSACCIÓN
 
-        // Insertar venta
+        //NIVEL DE AISLAMIENTO
+        con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
+        con.setAutoCommit(false); // INICIA TRANSACCIÓN
+
+        // 1. Insertar venta
         ps = con.prepareStatement(sqlVenta, PreparedStatement.RETURN_GENERATED_KEYS);
         ps.setInt(1, v.getCliente());
         ps.setString(2, v.getVendedor());
@@ -315,17 +323,33 @@ public class VentaDao {
         ps.setString(4, v.getFecha());
         ps.executeUpdate();
 
-        // Obtener ID de la venta
         rs = ps.getGeneratedKeys();
         int idVenta = 0;
         if (rs.next()) {
             idVenta = rs.getInt(1);
         }
 
-        // 2. Insertar detalles + actualizar stock
+        //Procesar cada producto
         for (Detalle d : detalles) {
 
-            // insertar detalle
+            //BLOQUEAR FILA DEL PRODUCTO
+            ps = con.prepareStatement(sqlSelectStock);
+            ps.setInt(1, d.getId_pro());
+            rs = ps.executeQuery();
+
+            int stockActual = 0;
+            if (rs.next()) {
+                stockActual = rs.getInt("stock");
+            }
+
+            //VALIDACIÓN IMPORTANTE
+            if (stockActual < d.getCantidad()) {
+                throw new Exception("Stock insuficiente para producto ID: " + d.getId_pro());
+            }
+
+            int nuevoStock = stockActual - d.getCantidad();
+
+            // Insertar detalle
             ps = con.prepareStatement(sqlDetalle);
             ps.setInt(1, d.getId_pro());
             ps.setInt(2, d.getCantidad());
@@ -333,13 +357,8 @@ public class VentaDao {
             ps.setInt(4, idVenta);
             ps.executeUpdate();
 
-            // Obtener producto actual
-            Productos pro = new ProductosDao().BuscarId(d.getId_pro());
-
-            // calcular nuevo stock
-            int nuevoStock = pro.getStock() - d.getCantidad();
-
-            ps = con.prepareStatement(sqlStock);
+            // Actualizar stock
+            ps = con.prepareStatement(sqlUpdateStock);
             ps.setInt(1, nuevoStock);
             ps.setInt(2, d.getId_pro());
             ps.executeUpdate();
@@ -350,7 +369,7 @@ public class VentaDao {
 
     } catch (Exception e) {
         try {
-            con.rollback(); //  ERROR → DESHACE TODO
+            con.rollback(); // ERROR → DESHACE TODO
             System.out.println("Rollback ejecutado");
             e.printStackTrace();
         } catch (SQLException ex) {

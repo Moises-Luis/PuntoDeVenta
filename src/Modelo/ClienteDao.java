@@ -111,24 +111,31 @@ public class ClienteDao {
        }
    }
    
-   public Cliente Buscarcliente(int dni){
-       Cliente cl = new Cliente();
-       String sql = "SELECT * FROM clientes WHERE dni = ?";
-       try {
-           con = cn.getConnection();
-           ps = con.prepareStatement(sql);
-           ps.setInt(1, dni);
-           rs = ps.executeQuery();
-           if (rs.next()) {
-               cl.setId(rs.getInt("id"));
-               cl.setNombre(rs.getString("nombre"));
-               cl.setTelefono(rs.getString("telefono"));
-               cl.setDireccion(rs.getString("direccion"));
-           }
-       } catch (SQLException e) {
-           System.out.println(e.toString());
-       }
-       return cl;
-   }
-   
+public Cliente Buscarcliente(int dni) {
+    Cliente cl = new Cliente();
+    String sql = "SELECT * FROM clientes WHERE dni = ?";
+
+    try {
+        con = cn.getConnection();
+
+        // Nivel de aislamiento
+        con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+
+        ps = con.prepareStatement(sql);
+        ps.setInt(1, dni);
+        rs = ps.executeQuery();
+
+        if (rs.next()) {
+            cl.setId(rs.getInt("id"));
+            cl.setNombre(rs.getString("nombre"));
+            cl.setTelefono(rs.getString("telefono"));
+            cl.setDireccion(rs.getString("direccion"));
+        }
+
+    } catch (SQLException e) {
+        System.out.println(e.toString());
+    }
+
+    return cl;
+}
 }

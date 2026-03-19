@@ -866,7 +866,7 @@ public final class Sistema extends javax.swing.JFrame {
                                     .addComponent(jLabel20))
                                 .addGap(24, 24, 24)
                                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtTelefonoProveedor, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
+                                    .addComponent(txtTelefonoProveedor, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
                                     .addComponent(txtDireccionProveedor))))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
@@ -1710,6 +1710,7 @@ public final class Sistema extends javax.swing.JFrame {
                 v.setCliente(cliente);
                 v.setVendedor(vendedor);
                 v.setTotal(monto);
+                v.setFecha(fechaActual);
             
                 // CREAR LISTA DE DETALLES
                 List<Detalle> listaDetalles = new ArrayList<>();
